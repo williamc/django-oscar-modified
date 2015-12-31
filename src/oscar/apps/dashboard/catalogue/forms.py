@@ -17,6 +17,7 @@ ProductCategory = get_model('catalogue', 'ProductCategory')
 ProductImage = get_model('catalogue', 'ProductImage')
 ProductRecommendation = get_model('catalogue', 'ProductRecommendation')
 ProductSelect = get_class('dashboard.catalogue.widgets', 'ProductSelect')
+Option = get_model('catalogue', 'Option')
 
 CategoryForm = movenodeform_factory(
     Category,
@@ -474,3 +475,11 @@ ProductAttributesFormSet = inlineformset_factory(ProductClass,
                                                  ProductAttribute,
                                                  form=ProductAttributesForm,
                                                  extra=3)
+                                                 
+                                                 
+class OptionForm(forms.ModelForm):
+
+    class Meta:
+        model = Option
+        fields = ['name', 'type']
+

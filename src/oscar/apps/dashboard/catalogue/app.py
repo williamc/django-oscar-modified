@@ -52,6 +52,15 @@ class CatalogueApplication(Application):
 
     stock_alert_view = get_class('dashboard.catalogue.views',
                                  'StockAlertListView')
+                                 
+    options_list_view = get_class('dashboard.catalogue.views',
+                                       'OptionsListView')                                       
+    options_update_view = get_class('dashboard.catalogue.views',
+                                    'OptionsUpdateView')
+    options_create_view = get_class('dashboard.catalogue.views',
+                                     'OptionsCreateView')
+    options_delete_view = get_class('dashboard.catalogue.views',
+                                     'OptionsDeleteView')                             
 
     def get_urls(self):
         urls = [
@@ -104,6 +113,19 @@ class CatalogueApplication(Application):
             url(r'^product-type/(?P<pk>\d+)/delete/$',
                 self.product_class_delete_view.as_view(),
                 name='catalogue-class-delete'),
+            url(r'^options/$', self.options_list_view.as_view(),
+                name='catalogue-options-list'),
+            url(r'^options/(?P<pk>\d+)/update/$',
+                self.options_update_view.as_view(),
+                name='catalogue-options-update'),
+            url(r'^options/create/$', self.options_create_view.as_view(),
+                name='catalogue-options-create'),
+            url(r'^options/(?P<pk>\d+)/delete/$',
+                self.options_delete_view.as_view(),
+                name='catalogue-options-delete'),
+                
+                
+                
         ]
         return self.post_process_urls(urls)
 

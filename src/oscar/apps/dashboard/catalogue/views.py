@@ -22,7 +22,8 @@ from oscar.views.generic import ObjectLookupView
  ProductCategoryFormSet,
  ProductImageFormSet,
  ProductRecommendationFormSet,
- ProductAttributesFormSet) \
+ ProductAttributesFormSet,
+ OptionForm) \
     = get_classes('dashboard.catalogue.forms',
                   ('ProductForm',
                    'ProductClassSelectForm',
@@ -34,12 +35,14 @@ from oscar.views.generic import ObjectLookupView
                    'ProductCategoryFormSet',
                    'ProductImageFormSet',
                    'ProductRecommendationFormSet',
-                   'ProductAttributesFormSet'))
-ProductTable, CategoryTable \
+                   'ProductAttributesFormSet',
+                   'OptionForm'))
+ProductTable, CategoryTable, OptionTable \
     = get_classes('dashboard.catalogue.tables',
-                  ('ProductTable', 'CategoryTable'))
+                  ('ProductTable', 'CategoryTable', 'OptionTable'))
 Product = get_model('catalogue', 'Product')
 Category = get_model('catalogue', 'Category')
+Option = get_model('catalogue', 'Option')
 ProductImage = get_model('catalogue', 'ProductImage')
 ProductCategory = get_model('catalogue', 'ProductCategory')
 ProductClass = get_model('catalogue', 'ProductClass')
@@ -745,3 +748,78 @@ class ProductClassDeleteView(generic.DeleteView):
     def get_success_url(self):
         messages.info(self.request, _("Product type deleted successfully"))
         return reverse("dashboard:catalogue-class-list")
+        
+
+class OptionListMixin(object):
+
+    def get_success_url(self):
+        return reverse("dashboard:catalogue-options-list")
+        
+        
+class OptionsListView(SingleTableMixin, generic.TemplateView):
+    """
+    Dashboard view of the options product list.
+    Supports the permission-based dashboard.
+    """
+
+    template_name = 'dashboard/catalogue/option_list.html'
+    table_class = OptionTable
+    context_table_name = 'options'
+
+    def get_queryset(self):
+        return Option.objects.all()
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(OptionsListView, self).get_context_data(*args, **kwargs)
+        ctx['child_categories'] = Option.objects.all()
+        return ctx
+
+
+class OptionsUpdateView(OptionListMixin, generic.UpdateView):
+    template_name = 'dashboard/catalogue/option_form.html'
+    model = Option
+    form_class = OptionForm
+
+    def get_context_data(self, **kwargs):
+        ctx = super(OptionsUpdateView, self).get_context_data(**kwargs)
+        ctx['title'] = _("Update option '%s'") % self.object.name
+        return ctx
+
+    def get_success_url(self):
+        messages.info(self.request, _("Options updated successfully"))
+        return super(OptionsUpdateView, self).get_success_url()
+        
+        
+        
+class OptionsCreateView(OptionListMixin, generic.CreateView):
+    template_name = 'dashboard/catalogue/option_form.html'
+    model = Option
+    form_class = OptionForm
+
+    def get_context_data(self, **kwargs):
+        ctx = super(OptionsCreateView, self).get_context_data(**kwargs)
+        ctx['title'] = _("Add a new Option")
+        return ctx
+
+    def get_success_url(self):
+        messages.info(self.request, _("Option created successfully"))
+        return super(OptionsCreateView, self).get_success_url()
+
+    def get_initial(self):
+        # set child category if set in the URL kwargs
+        initial = super(OptionsCreateView, self).get_initial()
+        if 'parent' in self.kwargs:
+            initial['_ref_node_id'] = self.kwargs['parent']
+        return initial
+        
+class OptionsDeleteView(generic.DeleteView):
+    template_name = 'dashboard/catalogue/option_delete.html'
+    model = Option
+    form_class = OptionForm
+
+    def get_context_data(self, *args, **kwargs):
+        ctx = super(OptionsDeleteView, self).get_context_data(*args,
+                                                                   **kwargs)
+        ctx['title'] = _("Delete option '%s'") % self.object.name
+        return ctx
+        
